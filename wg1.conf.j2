@@ -1,0 +1,16 @@
+[Interface]
+Address = {{ server_ip }}
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ server_private_key }}
+
+# Networking (PostUp/PostDown)
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o wlp0s20f3 -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o wlp0s20f3 -j MASQUERADE
+
+{% for peer in peers %}
+
+# --- This is for {{ peer.name }} ---
+[Peer]
+PublicKey = {{ peer_public_keys.results[loop.index0].stdout }}
+AllowedIPs = 10.20.20.{{ peer.ip_num }}/32
+{% endfor %}

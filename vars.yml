@@ -1,0 +1,12 @@
+wireguard_port: 51820
+dns_endpoint: "full-duckdns-domain-here"
+server_ip: "10.20.20.1/24"
+
+duckdns_token: "token-here"
+duckdns_domain: "duckdns-subdomain-here"
+
+peers:
+  - name: "John"
+    ip_num: 2
+  - name: "Smith"
+    ip_num: 3

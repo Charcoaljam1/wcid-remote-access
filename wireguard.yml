@@ -1,0 +1,92 @@
+- name: Build the WireGuard Tunnel
+  hosts: localhost
+  become: yes
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install WireGuard and Docker dependencies
+      apt:
+        name:
+        - wireguard
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - python3-docker
+        state: present
+
+    - name: Ensure Private Key exists (Generate if missing)
+      shell: "test -f /etc/wireguard/server.key || wg genkey > /etc/wireguard/server.key"
+
+    - name: Read Server Private Key
+      command: cat /etc/wireguard/server.key
+      register: server_priv_out
+      changed_when: false
+
+    - name: Derive Server Public Key
+      shell: "cat /etc/wireguard/server.key | wg pubkey"
+      register: server_pub_out
+      changed_when: false
+
+    - name: Ensure local config directory exists
+      file:
+        path: "~/wireguard/configs/keys"
+        state: directory
+      delegate_to: localhost
+      become: no
+
+    - name: Generate or Load Peer Private Keys
+      shell: |
+        if [ -f "~/wireguard/configs/keys/{{ item.name }}.key" ]; then
+          cat "~/wireguard/configs/keys/{{ item.name }}.key"
+        else
+          wg genkey | tee "~/wireguard/configs/keys/{{ item.name }}.key"
+        fi
+      register: peer_private_keys
+      delegate_to: localhost
+      loop: "{{ peers }}"
+      loop_control:
+        index_var: my_idx
+
+    - name: Derive Peer Public Keys
+      shell: "echo {{ item.stdout }} | wg pubkey"
+      register: peer_public_keys
+      delegate_to: localhost
+      become: no
+      loop: "{{ peer_private_keys.results }}"
+      changed_when: false
+
+    - name: Deploy Server Config
+      template:
+        src: wg1.conf.j2
+        dest: /etc/wireguard/wg1.conf
+      vars:
+        server_private_key: "{{ server_priv_out.stdout }}"
+      notify: Restart WireGuard
+
+    - name: Generate Client Configs on The Local Host
+      template:
+        src: peer_config.conf.j2
+        dest: "~/wireguard/configs/{{ item.name }}.conf"
+      delegate_to: localhost
+      loop: "{{ peers }}"
+      loop_control:
+        index_var: my_idx
+      vars:
+        peer_private_key: "{{ peer_private_keys.results[my_idx].stdout }}"
+        server_public_key: "{{ server_pub_out.stdout }}"
+
+    - name: Ensure DuckDNS container is running
+      community.docker.docker_container:
+        name: duckdns
+        image: lscr.io/linuxserver/duckdns:latest
+        state: started
+        restart_policy: unless-stopped
+        env:
+          SUBDOMAINS: "{{ duckdns_domain }}"
+          TOKEN: "{{ duckdns_token }}"
+          LOG_FILE: "false"
+
+  handlers:
+    - name: Restart WireGuard
+      shell: "wg-quick down wg1 || wg-quick up wg1"
