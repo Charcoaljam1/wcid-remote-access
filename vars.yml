@@ -4,12 +4,10 @@
 # This port must be forwarded on the church's router to the WireGuard server.
 wireguard_port: 51820
 
-# The public DNS address (e.g., your DuckDNS domain) that users will connect to.
-dns_endpoint: "wcid.duckdns.org"
-
 # The internal IP address and subnet for the WireGuard server itself.
 # This defines the virtual network for the VPN.
-vpn_subnet: "10.20.20"
+# Choose any numbers such as "10.20.30" to represent the octets for the network portion of the IP address.
+vpn_subnet: "1.1.1"
 server_ip: "{{ vpn_subnet }}.1"
 
 # --- Dynamic DNS (DuckDNS) Configuration ---
@@ -20,6 +18,9 @@ duckdns_token: "token-here"
 
 # The DuckDNS domain you are managing (without the ".duckdns.org" part).
 duckdns_domain: "domain-here"
+
+# The public DNS address (e.g., your DuckDNS domain) that users will connect to.
+dns_endpoint: "{{ duckdns_domain }}.duckdns.org"
 
 # --- Peer (User) Configuration ---
 
