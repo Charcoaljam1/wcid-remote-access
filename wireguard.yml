@@ -37,10 +37,13 @@
 
     - name: Generate or Load Peer Private Keys
       shell: |
-        if [ -f "~/wireguard/configs/keys/{{ item.name }}.key" ]; then
-          cat "~/wireguard/configs/keys/{{ item.name }}.key"
+        KEY_PATH="$HOME/wireguard/configs/keys/{{ item.name }}.key"
+        if [ -f "$KEY_PATH" ]; then
+          cat "$KEY_PATH"
         else
-          wg genkey | tee "~/wireguard/configs/keys/{{ item.name }}.key"
+          # Ensure the directory exists just in case (Safety First!)
+          mkdir -p "$(dirname "$KEY_PATH")"
+          wg genkey | tee "$KEY_PATH"
         fi
       register: peer_private_keys
       delegate_to: localhost

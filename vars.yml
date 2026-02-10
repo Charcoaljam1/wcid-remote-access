@@ -1,12 +1,43 @@
+# --- WireGuard Server Configuration ---
+
+# The public-facing port for the WireGuard service.
+# This port must be forwarded on the church's router to the WireGuard server.
 wireguard_port: 51820
-dns_endpoint: "full-duckdns-domain-here"
-server_ip: "10.20.20.1/24"
 
+# The public DNS address (e.g., your DuckDNS domain) that users will connect to.
+dns_endpoint: "wcid.duckdns.org"
+
+# The internal IP address and subnet for the WireGuard server itself.
+# This defines the virtual network for the VPN.
+vpn_subnet: "10.20.20"
+server_ip: "{{ vpn_subnet }}.1"
+
+# --- Dynamic DNS (DuckDNS) Configuration ---
+# This section is for automatically updating your public IP address with your DNS endpoint.
+
+# Your DuckDNS token. Get this from your DuckDNS account.
 duckdns_token: "token-here"
-duckdns_domain: "duckdns-subdomain-here"
 
+# The DuckDNS domain you are managing (without the ".duckdns.org" part).
+duckdns_domain: "domain-here"
+
+# --- Peer (User) Configuration ---
+
+# A list of internal LAN IP addresses that VPN users will be allowed to access.
+# This is for reaching specific machines on the church network (e.g., broadcast PCs).
+allowed_lan_ips:
+  - "192.168.0.198/32"
+  - "192.168.0.6/32"
+  - "192.168.0.205/32"
+  - "192.168.0.184/32"
+  - "192.168.0.1/32"
+  - "192.168.0.127/32"
+  - "192.168.0.98/32"
+
+# A list of all users who will be connecting to the VPN.
+# - 'name': The user's name (used for file naming).
+# - 'ip_num': The last number of their internal VPN IP address (e.g., '2' becomes '10.20.20.2').
+#   Each user must have a unique 'ip_num'.
 peers:
   - name: "John"
-    ip_num: 2
   - name: "Smith"
-    ip_num: 3
