@@ -34,7 +34,16 @@ Once activated, you are securely connected to the church network. You can now op
 
 This section is for managing the infrastructure itself. These playbooks automate the setup of laptops and the WireGuard server.
 
-### Prerequisites
+### Step 1: Clone the Repository
+First, get a copy of this project onto your administrative machine (or the server itself, if you're running the playbooks locally) by cloning the Git repository:
+
+```bash
+git clone https://github.com/Charcoaljam1/wcid-remote-access.git
+cd wcid-remote-access
+```
+**Note:** The repository is located at `https://github.com/Charcoaljam1/wcid-remote-access.git`.
+
+### Step 2: Prerequisites
 Before you run these playbooks, make sure you have:
 1.  **Ansible Installed:** If not, run `pip install ansible`.
 2.  **SSH Access:** Ensure you have passwordless SSH access to the target machines (the server or laptops you are configuring).
@@ -45,6 +54,12 @@ Before you run these playbooks, make sure you have:
     server_ip ansible_user=your_username
     ```
 4.  **Set Variables:** Edit `vars.yml` to define user names, paths, and other configuration details for the playbooks.
+
+### New to Ansible and Linux?
+If you are new to server administration or Ansible, these resources provide a great starting point:
+*   **Linux Basics:** [Learn Linux with this 5-day course from the Linux Foundation](https://www.youtube.com/watch?v=sWbUDq4S6Y8)
+*   **Ansible Basics:** [Official Ansible "Getting Started" Guide](https://docs.ansible.com/ansible/latest/user_guide/getting_started.html)
+*   **Ansible for Beginners Video:** [Ansible Full Course for Beginners by Jeff Geerling](https://www.youtube.com/watch?v=goclfp6a2dI)
 
 ### Available Playbooks
 
@@ -61,6 +76,33 @@ This section preserves the excellent, detailed explanation of why this system ex
 
 <details>
 <summary><b>Click to expand the full system explanation</b></summary>
+
+### System Architecture Diagram
+This diagram shows how a remote user connects securely to the church's internal network.
+
+```mermaid
+graph TD
+    subgraph "Internet"
+        UserDevice[User's Device<br/>(Laptop/Phone)]
+    end
+
+    subgraph "Church Network"
+        subgraph "DMZ (Demilitarized Zone)"
+            Server[WireGuard Server<br/>(Ubuntu w/ Ansible)]
+        end
+        subgraph "Internal LAN"
+            PC1[Broadcast PC 1]
+            PC2[Broadcast PC 2]
+            OtherDevices[Other LAN Devices]
+        end
+    end
+
+    UserDevice -- "Encrypted Tunnel" --> Server
+    Server -- "Secure Access" --> PC1
+    Server -- "Secure Access" --> PC2
+    Server -- "Secure Access" --> OtherDevices
+
+```
 
 ### Quick Summary
 
