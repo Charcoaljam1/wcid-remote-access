@@ -3,3 +3,4 @@
   roles:
     - wireguard
     - duckdns
+    - wakeonlan
