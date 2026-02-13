@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Configuration
+DELL_IP="{{ remote_machine_ip }}"
+DELL_MAC="{{ remote_machine_mac }}"
+LOG_FILE="{{ log_path }}"
+CHECK_INTERVAL=5
+
+# Function to check if Dell is awake
+is_dell_awake() {
+    ping -c 1 -W 2 "$DELL_IP" > /dev/null 2>&1
+    return $?
+}
+
+# Function to check if anyone is connected to VPN
+is_vpn_active() {
+    # Check if any peers have recent handshakes (within last 3 minutes)
+    sudo wg show "{{ wireguard_interface }}" latest-handshakes | awk '{if ($2 > systime() - 180) exit 0} END {exit 1}'
+    return $?
+}
+
+# Function to wake the Dell
+wake_dell() {
+    echo "$(date): Sending WoL packet to Dell at $DELL_MAC" >> "$LOG_FILE"
+    wakeonlan "$DELL_MAC"
+}
+
+# Main monitoring loop
+while true; do
+    # Only try to wake if someone is connected to VPN
+    if is_vpn_active; then
+        if ! is_dell_awake; then
+            echo "$(date): Dell appears to be asleep and VPN is active. Attempting wake..." >> "$LOG_FILE"
+            wake_dell
+            # Wait a bit for it to wake up
+            sleep 45
+        fi
+    fi
+    
+    sleep "$CHECK_INTERVAL"
+done

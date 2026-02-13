@@ -1,0 +1,53 @@
+---
+- name: Deploy Dell Auto-Wake Script
+  become: yes
+
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: 
+          - wakeonlan
+          - wireguard
+        state: present
+        update_cache: yes
+
+    - name: Copy the monitor script
+      copy:
+        src: auto-wake-machine.sh
+        dest: "{{ script_path }}"
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Create log file with correct permissions
+      file:
+        path: "{{ log_path }}"
+        state: touch
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Create systemd service unit
+      copy:
+        dest: "/etc/systemd/system/dell-wake.service"
+        content: |
+          [Unit]
+          Description=Monitor VPN and Wake Dell Server
+          After=network.target wg-quick@wg0.service
+
+          [Service]
+          ExecStart={{ script_path }}
+          Restart=always
+          RestartSec=10
+          StandardOutput=append:{{ log_path }}
+          StandardError=append:{{ log_path }}
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start and enable dell-wake service
+      systemd:
+        name: dell-wake
+        state: restarted
+        enabled: yes
+        daemon_reload: yes

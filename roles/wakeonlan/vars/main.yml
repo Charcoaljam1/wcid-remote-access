@@ -1,0 +1,5 @@
+remote_machine_ip: "192.168.0.198"
+remote_machine_mac: "aa:bb:cc:dd:ee:ff"
+script_path: "/usr/local/bin/auto-wake-dell.sh"
+log_path: "/var/log/auto-wake-dell.log"
+wireguard_interface: "wg1"

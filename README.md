@@ -89,6 +89,7 @@ To add or remove users who can connect to the VPN:
     # Replace 'localhost' with your target host or group as defined in inventory.ini if not running locally.
     ansible-playbook site.yml --ask-vault-pass
     ```
+*   `wakeonlan`: This role enables Wake-on-LAN functionality for specified hosts, allowing them to be remotely powered on.
 *   **Generated Peer Configurations:** After running the playbook, individual client configuration files (`.conf`) will be generated on your Ansible control machine in `~/wireguard/configs/`. These are the files you will distribute to users.
 ---
 
