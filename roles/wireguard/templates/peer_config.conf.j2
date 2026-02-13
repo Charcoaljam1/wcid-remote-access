@@ -1,9 +1,9 @@
 [Interface]
 PrivateKey = {{ peer_private_key }}
-Address = {{ vpn_subnet }}.{{ my_idx + 2 }}/32
+Address = {{ vpn_subnet }}.{{ peer.ip }}/32
 
 [Peer]
 PublicKey = {{ server_public_key }}
 Endpoint = {{ dns_endpoint }}:{{ wireguard_port }}
-AllowedIPs = 0.0.0.0/0, {{ allowed_lan_ips | join(', ') }}
+AllowedIPs = {{ allowed_lan_ips | join(', ') }}
 PersistentKeepalive = 25

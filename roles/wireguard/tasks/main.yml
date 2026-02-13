@@ -68,11 +68,12 @@
     - name: Generate Client Configs on The Local Host
       template:
         src: peer_config.conf.j2
-        dest: "~/wireguard/configs/{{ item.name }}.conf"
+        dest: "~/wireguard/configs/{{ peer.name }}.conf"
       delegate_to: localhost
       loop: "{{ peers }}"
       loop_control:
         index_var: my_idx
+        loop_var: peer
       vars:
         peer_private_key: "{{ peer_private_keys.results[my_idx].stdout }}"
         server_public_key: "{{ server_pub_out.stdout }}"

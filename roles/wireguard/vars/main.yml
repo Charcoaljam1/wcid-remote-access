@@ -31,7 +31,11 @@ allowed_lan_ips:
 # - 'name': The user's name (used for file naming).
 peers:
   - name: "John"
+    ip: 2
   - name: "Smith"
+    ip: 3
   - name: "Adam"
+    ip: 4
   - name: "Eve"
+    ip: 5
 

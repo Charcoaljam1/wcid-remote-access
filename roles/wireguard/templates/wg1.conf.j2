@@ -11,5 +11,5 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -
 # --- This is for {{ peer.name }} ---
 [Peer]
 PublicKey = {{ peer_public_keys.results[loop.index0].stdout }}
-AllowedIPs = {{ vpn_subnet }}.{{ loop.index + 1 }}/32
+AllowedIPs = {{ vpn_subnet }}.{{ peer.ip }}/32
 {% endfor %}
