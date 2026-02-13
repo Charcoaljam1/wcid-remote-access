@@ -1,0 +1,19 @@
+  - name: Install WireGuard and Docker dependencies
+    apt:
+      name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - python3-docker
+      state: present
+
+  - name: Ensure DuckDNS container is running
+    community.docker.docker_container:
+      name: duckdns
+      image: lscr.io/linuxserver/duckdns:latest
+      state: started
+      restart_policy: unless-stopped
+      env:
+        SUBDOMAINS: "{{ duckdns_domain }}"
+        TOKEN: "{{ duckdns_token }}"
+        LOG_FILE: "false"

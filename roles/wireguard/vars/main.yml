@@ -10,16 +10,8 @@ wireguard_port: 51820
 vpn_subnet: "1.1.1"
 server_ip: "{{ vpn_subnet }}.1"
 
-# --- Dynamic DNS (DuckDNS) Configuration ---
-# This section is for automatically updating your public IP address with your DNS endpoint.
-
-# Your DuckDNS token. Get this from your DuckDNS account.
-duckdns_token: "token-here"
-
-# The DuckDNS domain you are managing (without the ".duckdns.org" part).
-duckdns_domain: "domain-here"
-
 # The public DNS address (e.g., your DuckDNS domain) that users will connect to.
+# The duckdns_domain variable lives in the group_vars folder
 dns_endpoint: "{{ duckdns_domain }}.duckdns.org"
 
 # --- Peer (User) Configuration ---
@@ -37,8 +29,9 @@ allowed_lan_ips:
 
 # A list of all users who will be connecting to the VPN.
 # - 'name': The user's name (used for file naming).
-# - 'ip_num': The last number of their internal VPN IP address (e.g., '2' becomes '10.20.20.2').
-#   Each user must have a unique 'ip_num'.
 peers:
   - name: "John"
   - name: "Smith"
+  - name: "Adam"
+  - name: "Eve"
+

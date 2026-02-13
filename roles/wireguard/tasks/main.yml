@@ -1,32 +1,27 @@
-- name: Build the WireGuard Tunnel
-  hosts: localhost
-  become: yes
-  vars_files:
-    - vars.yml
-
-  tasks:
-    - name: Install WireGuard and Docker dependencies
+    - name: Install WireGuard
       apt:
         name:
         - wireguard
-        - docker-ce
-        - docker-ce-cli
-        - containerd.io
-        - python3-docker
         state: present
+      become: yes
 
     - name: Ensure Private Key exists (Generate if missing)
       shell: "test -f /etc/wireguard/server.key || wg genkey > /etc/wireguard/server.key"
+      become: yes
 
     - name: Read Server Private Key
       command: cat /etc/wireguard/server.key
       register: server_priv_out
       changed_when: false
+      no_log: true
+      become: yes
 
     - name: Derive Server Public Key
       shell: "cat /etc/wireguard/server.key | wg pubkey"
       register: server_pub_out
       changed_when: false
+      no_log: true
+      become: yes
 
     - name: Ensure local config directory exists
       file:
@@ -50,6 +45,7 @@
       loop: "{{ peers }}"
       loop_control:
         index_var: my_idx
+      no_log: true
 
     - name: Derive Peer Public Keys
       shell: "echo {{ item.stdout }} | wg pubkey"
@@ -58,6 +54,7 @@
       become: no
       loop: "{{ peer_private_keys.results }}"
       changed_when: false
+      no_log: true
 
     - name: Deploy Server Config
       template:
@@ -66,6 +63,7 @@
       vars:
         server_private_key: "{{ server_priv_out.stdout }}"
       notify: Restart WireGuard
+      become: yes
 
     - name: Generate Client Configs on The Local Host
       template:
@@ -78,18 +76,3 @@
       vars:
         peer_private_key: "{{ peer_private_keys.results[my_idx].stdout }}"
         server_public_key: "{{ server_pub_out.stdout }}"
-
-    - name: Ensure DuckDNS container is running
-      community.docker.docker_container:
-        name: duckdns
-        image: lscr.io/linuxserver/duckdns:latest
-        state: started
-        restart_policy: unless-stopped
-        env:
-          SUBDOMAINS: "{{ duckdns_domain }}"
-          TOKEN: "{{ duckdns_token }}"
-          LOG_FILE: "false"
-
-  handlers:
-    - name: Restart WireGuard
-      shell: "wg-quick down wg1 || wg-quick up wg1"

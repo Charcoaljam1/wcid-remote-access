@@ -1,0 +1,5 @@
+- name: Build the WireGuard Tunnel
+  hosts: localhost
+  roles:
+    - wireguard
+    - duckdns
