@@ -19,7 +19,7 @@ You need two applications on your computer:
     *   [Download from the official site](https://rustdesk.com/)
 
 ### Step 2: Get Your Configuration File
-Contact the technical administrator. They will provide you with a unique `[your_name].conf` file. This file is your personal key to the network.
+Contact the technical administrator. They will provide you with a unique `[your_name].conf` file. This file is your personal key to the network. **Treat this file with the same security as a password, as it grants access to the church network. Do not share it.**
 
 ### Step 3: Connect
 1.  Open the WireGuard app.
@@ -55,19 +55,41 @@ Before you run these playbooks, make sure you have:
     ```
 4.  **Set Variables:** Edit `vars.yml` to define user names, paths, and other configuration details for the playbooks.
 
+### Managing Secrets with Ansible Vault
+
+Sensitive information, such as the `duckdns_token`, is secured using Ansible Vault.
+1.  **Create/Edit Vault:** To create a new vault file or edit an existing one (e.g., for `duckdns_token`), run:
+    ```bash
+    ansible-vault create group_vars/all/vault.yml   # To create a new vault file
+    # OR
+    ansible-vault edit group_vars/all/vault.yml     # To edit an existing vault file
+    ```
+    You will be prompted to create/enter a vault password. **Remember this password; it cannot be recovered if lost.**
+2.  **Add Secrets:** Inside the vault file, add your sensitive variables (e.g., `duckdns_token: "your-real-token"`).
+3.  **Remove from Plaintext:** Ensure no sensitive variables remain in unencrypted files like `group_vars/all.yml` or `roles/duckdns/vars/main.yml`.
+
 ### New to Ansible and Linux?
 If you are new to server administration or Ansible, these resources provide a great starting point:
 *   **Linux Basics:** [Learn Linux with this 5-day course from the Linux Foundation](https://www.youtube.com/watch?v=sWbUDq4S6Y8)
 *   **Ansible Basics:** [Official Ansible "Getting Started" Guide](https://docs.ansible.com/ansible/latest/user_guide/getting_started.html)
 *   **Ansible for Beginners Video:** [Ansible Full Course for Beginners by Jeff Geerling](https://www.youtube.com/watch?v=goclfp6a2dI)
 
+### Managing VPN Users (Peers)
+
+To add or remove users who can connect to the VPN:
+1.  Edit `roles/wireguard/vars/main.yml`.
+2.  Modify the `peers` list to add or remove entries (e.g., `- name: "NewUser"`).
+3.  The playbook will automatically generate or update configuration files for these users.
+
 ### Available Playbooks
 
-*   `wireguard.yml`: This playbook configures the main WireGuard server, sets up the firewall rules, and prepares the necessary peer configurations based on the templates.
+*   `site.yml`: This is the main playbook that orchestrates the configuration of the WireGuard server and DuckDNS client, and generates peer configurations.
     ```bash
-    # Run this to configure the main server
-    ansible-playbook -i inventory.ini wireguard.yml
+    # Run this playbook. If you are using Ansible Vault, you MUST include --ask-vault-pass.
+    # Replace 'localhost' with your target host or group as defined in inventory.ini if not running locally.
+    ansible-playbook site.yml --ask-vault-pass
     ```
+*   **Generated Peer Configurations:** After running the playbook, individual client configuration files (`.conf`) will be generated on your Ansible control machine in `~/wireguard/configs/`. These are the files you will distribute to users.
 ---
 
 ## 3. The "Why": Understanding The System (The Original README)
@@ -83,7 +105,7 @@ This diagram shows how a remote user connects securely to the church's internal 
 ```mermaid
 graph TD
     subgraph "Internet"
-        UserDevice[User's Device<br/>(Laptop/Phone)]
+        UserDevice[User's Device&#10;(Laptop/Phone)]
     end
 
     subgraph "Church Network"

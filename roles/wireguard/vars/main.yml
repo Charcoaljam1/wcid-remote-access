@@ -7,7 +7,7 @@ wireguard_port: 51820
 # The internal IP address and subnet for the WireGuard server itself.
 # This defines the virtual network for the VPN.
 # Choose any numbers such as "10.20.30" to represent the octets for the network portion of the IP address.
-vpn_subnet: "1.1.1"
+vpn_subnet: "10.8.0"
 server_ip: "{{ vpn_subnet }}.1"
 
 # The public DNS address (e.g., your DuckDNS domain) that users will connect to.
