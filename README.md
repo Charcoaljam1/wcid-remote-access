@@ -103,16 +103,17 @@ This section preserves the excellent, detailed explanation of why this system ex
 This diagram shows how a remote user connects securely to the church's internal network.
 
 ```mermaid
-graph TD
-    subgraph "Internet"
-        UserDevice[User's Device&#10;(Laptop/Phone)]
+flowchart TD
+    subgraph Internet
+        UserDevice["User's Device<br/>(Laptop/Phone)"]
     end
 
-    subgraph "Church Network"
-        subgraph "DMZ (Demilitarized Zone)"
-            Server[WireGuard Server<br/>(Ubuntu w/ Ansible)]
+    subgraph Church_Network [Church Network]
+        subgraph DMZ [DMZ / Demilitarized Zone]
+            Server["WireGuard Server<br/>(Ubuntu w/ Ansible)"]
         end
-        subgraph "Internal LAN"
+        
+        subgraph Internal_LAN [Internal LAN]
             PC1[Broadcast PC 1]
             PC2[Broadcast PC 2]
             OtherDevices[Other LAN Devices]
@@ -123,10 +124,9 @@ graph TD
     Server -- "Secure Access" --> PC1
     Server -- "Secure Access" --> PC2
     Server -- "Secure Access" --> OtherDevices
-
 ```
 
-### Quick Summary
+Quick Summary
 
 | **Feature**             | **Benefit to the Church**                              |
 | ----------------------- | ------------------------------------------------------ |
