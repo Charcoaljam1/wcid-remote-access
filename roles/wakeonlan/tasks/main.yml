@@ -1,39 +1,38 @@
 ---
-- name: Deploy Dell Auto-Wake Script
-  become: yes
+  - name: Install dependencies
+    apt:
+      name:
+        - wakeonlan
+        - wireguard
+      state: present
+      update_cache: yes
+    become: yes
 
-  tasks:
-    - name: Install dependencies
-      apt:
-        name: 
-          - wakeonlan
-          - wireguard
-        state: present
-        update_cache: yes
+  - name: Copy the monitor script
+    template:
+      src: auto-wake-machine.sh.j2
+      dest: "{{ script_path }}"
+      mode: '0755'
+      owner: root
+      group: root
+    become: yes
 
-    - name: Copy the monitor script
-      copy:
-        src: auto-wake-machine.sh
-        dest: "{{ script_path }}"
-        mode: '0755'
-        owner: root
-        group: root
+  - name: Create log file with correct permissions
+    file:
+      path: "{{ log_path }}"
+      state: touch
+      mode: '0644'
+      owner: root
+      group: root
+    become: yes
 
-    - name: Create log file with correct permissions
-      file:
-        path: "{{ log_path }}"
-        state: touch
-        mode: '0644'
-        owner: root
-        group: root
-
-    - name: Create systemd service unit
-      copy:
-        dest: "/etc/systemd/system/dell-wake.service"
-        content: |
+  - name: Create systemd service unit
+    copy:
+      dest: "/etc/systemd/system/dell-wake.service"
+      content: |
           [Unit]
           Description=Monitor VPN and Wake Dell Server
-          After=network.target wg-quick@wg0.service
+          After=network.target wg-quick@{{ wireguard_interface }}.service
 
           [Service]
           ExecStart={{ script_path }}
@@ -44,10 +43,12 @@
 
           [Install]
           WantedBy=multi-user.target
+    become: yes
 
-    - name: Start and enable dell-wake service
-      systemd:
-        name: dell-wake
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
+  - name: Start and enable dell-wake service
+    systemd:
+      name: dell-wake
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+    become: yes
