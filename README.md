@@ -53,7 +53,8 @@ Before you run these playbooks, make sure you have:
     [wireguard_server]
     server_ip ansible_user=your_username
     ```
-4.  **Set Variables:** Edit `vars.yml` to define user names, paths, and other configuration details for the playbooks.
+4.  **Port Forwarding:** Ensure that the WireGuard port (default: `51820` UDP, configured in `roles/wireguard/vars/main.yml`) is forwarded on your router to the server's internal IP address. This allows external WireGuard clients to connect.
+5.  **Set Variables:** Edit `vars.yml` to define user names, paths, and other configuration details for the playbooks.
 
 ### Managing Secrets with Ansible Vault
 
@@ -68,6 +69,15 @@ Sensitive information, such as the `duckdns_token`, is secured using Ansible Vau
 2.  **Add Secrets:** Inside the vault file, add your sensitive variables (e.g., `duckdns_token: "your-real-token"`).
 3.  **Remove from Plaintext:** Ensure no sensitive variables remain in unencrypted files like `group_vars/all.yml` or `roles/duckdns/vars/main.yml`.
 
+### Configuring DuckDNS
+
+This project uses the `duckdns` role to automatically update your public IP address with the DuckDNS service. This ensures your WireGuard server is always reachable via a consistent domain name.
+
+1.  **Set your DuckDNS Domain:** Edit `group_vars/all.yml` and set the `duckdns_domain` variable to your chosen DuckDNS subdomain (e.g., `yoursubdomain.duckdns.org`).
+2.  **Secure your DuckDNS Token:** As mentioned above, store your `duckdns_token` in `group_vars/all/vault.yml` using Ansible Vault.
+
+The `duckdns` role runs a Docker container on the WireGuard server to handle these updates. Make sure Docker is installed on your server (the `site.yml` playbook handles this by default).
+
 ### New to Ansible and Linux?
 If you are new to server administration or Ansible, these resources provide a great starting point:
 *   **Linux Basics:** [Learn Linux with this 5-day course from the Linux Foundation](https://www.youtube.com/watch?v=sWbUDq4S6Y8)
@@ -77,9 +87,10 @@ If you are new to server administration or Ansible, these resources provide a gr
 ### Managing VPN Users (Peers)
 
 To add or remove users who can connect to the VPN:
-1.  Edit `roles/wireguard/vars/main.yml`.
-2.  Modify the `peers` list to add or remove entries (e.g., `- name: "NewUser"`).
+1.  Edit the `peers` list in `roles/wireguard/vars/main.yml`.
+2.  Add or remove entries (e.g., `- name: "NewUser"`).
 3.  The playbook will automatically generate or update configuration files for these users.
+    **Note:** The generated client configuration files (`.conf`) for each user will be located on your Ansible control machine in `~/wireguard/configs/`. You will distribute these files to your users.
 
 ### Available Playbooks
 
