@@ -96,9 +96,12 @@ To add or remove users who can connect to the VPN:
 
 *   `site.yml`: This is the main playbook that orchestrates the configuration of the WireGuard server and DuckDNS client, and generates peer configurations.
     ```bash
-    # Run this playbook. If you are using Ansible Vault, you MUST include --ask-vault-pass.
+    # Run this playbook.
+    # -i inventory.ini: Specifies the inventory file to use.
+    # -K, --ask-become-pass: Prompts for the sudo password (become password) if tasks require elevated privileges on target hosts.
+    # --ask-vault-pass: Prompts for the Ansible Vault password if you are using encrypted variables (e.g., 'duckdns_token'). This is CRUCIAL for playbooks that access vaulted secrets.
     # Replace 'localhost' with your target host or group as defined in inventory.ini if not running locally.
-    ansible-playbook site.yml --ask-vault-pass
+    ansible-playbook -i inventory.ini site.yml -K --ask-vault-pass
     ```
 *   `wakeonlan`: This role enables Wake-on-LAN functionality for specified hosts, allowing them to be remotely powered on.
 *   **Generated Peer Configurations:** After running the playbook, individual client configuration files (`.conf`) will be generated on your Ansible control machine in `~/wireguard/configs/`. These are the files you will distribute to users.
