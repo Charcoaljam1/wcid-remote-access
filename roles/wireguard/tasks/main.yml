@@ -36,7 +36,6 @@
         if [ -f "$KEY_PATH" ]; then
           cat "$KEY_PATH"
         else
-          # Ensure the directory exists just in case (Safety First!)
           mkdir -p "$(dirname "$KEY_PATH")"
           wg genkey | tee "$KEY_PATH"
         fi
@@ -84,3 +83,10 @@
       vars:
         peer_private_key: "{{ peer_private_keys.results[my_idx].stdout }}"
         server_public_key: "{{ server_pub_out.stdout }}"
+
+    - name: Open WireGuard UDP port
+      community.general.ufw:
+        rule: allow
+        port: "{{ wireguard_port }}"
+        proto: udp
+      become: yes
