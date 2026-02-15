@@ -65,6 +65,13 @@
       notify: Restart WireGuard
       become: yes
 
+    - name: Ensure WireGuard is started and enabled
+      ansible.builtin.systemd:
+        name: wg-quick@wg1
+        state: started
+        enabled: yes
+      become: yes
+
     - name: Generate Client Configs on The Local Host
       template:
         src: peer_config.conf.j2
